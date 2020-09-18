@@ -1,17 +1,17 @@
-import React from "react";
-import {AgGridReact, ChangeDetectionStrategyType} from "@ag-grid-community/react";
+import React, {Component, createElement, ReactPortal} from "react";
+import {createPortal} from 'react-dom';
 
 import "@ag-grid-community/core/dist/styles/ag-grid.css";
 import "@ag-grid-community/core/dist/styles/ag-theme-balham.css";
 import "./App.css";
 
-import {ClientSideRowModelModule} from "@ag-grid-community/client-side-row-model";
-
-// import {CellComponent} from "./CellComponent";
+import {CellComponent} from "./CellComponent";
 import {getRandomRows} from "./rowData";
-const CellComponent = (props: any) => <div>{props.value}</div>;
+import {AgGridReact} from "@ag-grid-community/react";
+import {ClientSideRowModelModule} from "@ag-grid-community/client-side-row-model";
+// const CellComponent = (props: any) => <div>{props.value}</div>;
 
-
+/*
 class App extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
@@ -20,7 +20,7 @@ class App extends React.Component<any, any> {
             columnDefs: [
                 {
                     field: "make",
-                    // cellRenderer: "cellComponent",
+                    cellRenderer: "cellComponent",
                 }
             ],
             rowData: [],
@@ -101,6 +101,67 @@ class App extends React.Component<any, any> {
             console.log("Setting State");
             this.setState({rowData: newData}, () => this.setRowData(times - 1));
         }
+    }
+}
+*/
+
+export class TestComponent extends Component<any> {
+    render() {
+        return <div style={{height: 20}}>Test Component</div>;
+    }
+}
+
+class App extends Component<any, any> {
+    portals: ReactPortal[] = [];
+    key = 0;
+    eParentElement: any;
+
+    render() {
+        return createElement(React.Fragment, null,
+            createElement("button", {
+                onClick: () => {
+                    this.createPortal();
+                }
+            }, "Create Portal"),
+            createElement("button", {
+                onClick: () => {
+                    this.deletePortal();
+                }
+            }, "Delete Portal"),
+            createElement('div', {}, this.portals));
+    }
+
+    createPortal() {
+        this.eParentElement = document.createElement('span');
+        const reactComponent = createElement(TestComponent, {
+            ref: (element: any) => {
+                debugger
+                console.log(element);
+                document.querySelector("#container")!.appendChild(this.eParentElement)
+            }
+        });
+        const portal: ReactPortal = createPortal(
+            reactComponent,
+            this.eParentElement,
+            "" + this.key++
+        );
+
+        this.portals.push(portal);
+
+        this.forceUpdate(() => {
+            console.log("create refresh");
+        });
+    }
+
+    deletePortal() {
+        console.log("detelet");
+        this.portals = [];
+
+        this.forceUpdate(() => {
+            debugger
+            console.log("delete refresh");
+            document.querySelector("#container")!.removeChild(this.eParentElement)
+        });
     }
 }
 
